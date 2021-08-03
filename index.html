@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Accordion Web Component</title>
+
+    <link rel="stylesheet" href="styles/page.css" />
+  </head>
+  <body>
+    <template id="accordion-template">
+      <div class="accordion">
+        <slot></slot>
+      </div>
+    </template>
+
+    <template id="accordion-section-template">
+      <section>
+        <header tabindex="0">
+          <h3>untitled</h3>
+          <span role="button"></span>
+        </header>
+        <div class="section-content">
+          <slot></slot>
+        </div>
+      </section>
+    </template>
+
+    <main>
+      <custom-accordion>
+        <accordion-section title="Lorem">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis dolor quasi ex obcaecati accusantium ipsam id
+          assumenda? Perferendis commodi hic numquam vel.
+        </accordion-section>
+        <accordion-section title="Ipsum">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos, tempore accusantium nulla sed molestias facere
+          molestiae debitis eligendi rerum corporis est error.
+        </accordion-section>
+        <accordion-section title="Sit">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit voluptatem tempore molestiae eius? Animi
+          rerum dicta nam ex eveniet deserunt recusandae maiores?
+        </accordion-section>
+        <accordion-section title="Amet">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eveniet adipisci consequuntur, quis iusto sit dolore
+          eius minus voluptatem accusantium quam fugiat fuga expedita quae quod consectetur neque nulla illum rem?
+          Asperiores modi officia numquam saepe ducimus minus obcaecati nam hic tempora, omnis laudantium nemo quos vero
+          non impedit quod iusto fugiat est maiores! Perspiciatis eaque saepe consectetur iure fugiat quidem soluta
+          minima at deleniti, quibusdam ab maiores aspernatur esse. Odio, dicta vitae, accusamus a odit illo nisi
+          asperiores incidunt voluptatibus reiciendis, aliquam itaque. Dolore velit iste veritatis tempora veniam nemo
+          officiis dignissimos placeat sint. Cum excepturi earum id laboriosam suscipit.
+        </accordion-section>
+      </custom-accordion>
+    </main>
+
+    <footer>Idea taken from <a target="_blank" href="https://www.etq-amsterdam.com/">www.etq-amsterdam.com</a></footer>
+
+    <script type="module" src="js/web-components/index.js"></script>
+  </body>
+</html>
