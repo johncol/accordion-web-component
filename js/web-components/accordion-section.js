@@ -7,76 +7,104 @@ export class AccordionSection extends HTMLElement {
   }
 
   configure() {
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(this.buildStyleElement());
-    shadow.appendChild(this.buildComponent());
+    this.shadow = this.attachShadow({ mode: 'closed' });
+    this.shadow.appendChild(this.buildStyleElement());
+    this.shadow.appendChild(this.buildComponent());
   }
 
   buildComponent() {
-    const template = document.querySelector('#accordion-section-template');
-    const element = document.importNode(template.content, true);
-    element.querySelector('header h3').innerHTML = this.title;
-    this.addToggleListeners(element);
+    const element = this.getElementFromTemplate();
+    this.saveClassReferences(element);
+    this.renderInputs();
+    this.registerListeners();
     return element;
   }
 
-  addToggleListeners(root) {
-    const header = root.querySelector('section > header');
+  getElementFromTemplate() {
+    const template = document.querySelector('#accordion-section-template');
+    return document.importNode(template.content, true);
+  }
 
-    header.addEventListener('click', (_) => this.toggleContainingSection(header));
-    header.addEventListener('keypress', (event) => {
+  saveClassReferences(root) {
+    this.root = root;
+    this.section = root.querySelector('section');
+    this.header = root.querySelector('section > header');
+  }
+
+  renderInputs() {
+    this.root.querySelector('header h3').textContent = this.title;
+  }
+
+  registerListeners() {
+    this.header.addEventListener('click', () => {
+      this.toggleContainingSection();
+    });
+
+    this.header.addEventListener('keypress', (event) => {
       if (keyPressedIsAnyOf(event, Keys.ENTER, Keys.SPACE)) {
-        this.toggleContainingSection(header);
+        this.toggleContainingSection();
       }
     });
-  }
 
-  toggleContainingSection(header) {
-    const section = header.parentElement;
-    const openState = this.toggleOpenAttr(section);
-    openState ? this.openSection(section) : this.closeSection(section);
-  }
-
-  toggleOpenAttr(element) {
-    const newOpenState = element.dataset.open === 'true' ? false : true;
-    element.dataset.open = newOpenState;
-    return newOpenState;
-  }
-
-  openSection(section) {
-    const naturalHeight = section.scrollHeight;
-    section.style.height = `${naturalHeight}px`;
-
-    const listenTransitionendEvent = (_) => {
-      section.style.height = 'auto';
-      section.removeEventListener('transitionend', listenTransitionendEvent);
-    };
-    section.addEventListener('transitionend', listenTransitionendEvent);
-  }
-
-  closeSection(section) {
-    const naturalHeight = section.scrollHeight;
-    const closedHeight = this.calculateClosedHeight(section);
-
-    section.style.transition = '';
-    requestAnimationFrame(() => {
-      section.style.transition = null;
-
-      section.style.height = `${naturalHeight}px`;
-      requestAnimationFrame(() => (section.style.height = closedHeight));
+    this.section.addEventListener('transitionend', () => {
+      this.transitioning = false;
     });
   }
 
-  calculateClosedHeight(section) {
-    const sectionStyle = getComputedStyle(section);
+  toggleContainingSection() {
+    if (!this.transitioning) {
+      const open = this.dataOpen === 'true' ? false : true;
+      this.dataOpen = open;
+      open ? this.openSection() : this.closeSection();
+    }
+  }
+
+  openSection() {
+    const naturalHeight = this.section.scrollHeight;
+    this.section.style.height = `${naturalHeight}px`;
+    this.transitioning = true;
+
+    const setHeightToAutoOnTransitionEnd = () => {
+      this.section.style.height = 'auto';
+      this.section.removeEventListener('transitionend', setHeightToAutoOnTransitionEnd);
+    };
+    this.section.addEventListener('transitionend', setHeightToAutoOnTransitionEnd);
+  }
+
+  closeSection() {
+    const naturalHeight = this.section.scrollHeight;
+    const closedHeight = this.calculateClosedHeight();
+
+    this.section.style.transition = '';
+    requestAnimationFrame(() => {
+      this.section.style.transition = null;
+
+      this.section.style.height = `${naturalHeight}px`;
+      requestAnimationFrame(() => {
+        this.section.style.height = closedHeight;
+        this.transitioning = true;
+      });
+    });
+  }
+
+  calculateClosedHeight() {
+    const sectionStyle = getComputedStyle(this.section);
     const paddingTop = Number.parseInt(sectionStyle.paddingTop);
     const paddingBottom = Number.parseInt(sectionStyle.paddingBottom);
-    const headerHeight = section.children[0].scrollHeight;
+    const headerHeight = this.section.children[0].scrollHeight;
     return `${paddingTop + headerHeight + paddingBottom}px`;
   }
 
   get title() {
     return this.getAttribute('title');
+  }
+
+  get dataOpen() {
+    return this.getAttribute('data-open');
+  }
+
+  set dataOpen(dataOpen) {
+    return this.setAttribute('data-open', dataOpen);
   }
 
   buildStyleElement() {
@@ -153,7 +181,7 @@ export class AccordionSection extends HTMLElement {
         transform: rotateZ(90deg);
       }
 
-      section[data-open='true'] header > [role='button']::before {
+      :host([data-open='true']) section header > [role='button']::before {
         transform: rotateZ(90deg);
       }
 
@@ -162,7 +190,7 @@ export class AccordionSection extends HTMLElement {
         transition: opacity var(--transitions-duration) ease-in-out;
       }
 
-      section[data-open='true'] .section-content {
+      :host([data-open='true']) section .section-content {
         opacity: 1;
       }
     `;
